@@ -36,11 +36,11 @@ emeas = [col1 X];
 
 % Transform numerical labels into 1 / -1 labels
 newclass = ones(rows,1);
-newclass(Y == caseNum) = 0; % Active class gets the "1" label
+% newclass(Y == caseNum) = 1; % Active class gets the "1" label
 for i=1:rows
     if Y(i) == caseNum,
-        Y(i) = 1;
-    else Y(i) = 0;
+        newclass(i) = 1;
+    else newclass(i) = 0;
     end
 end
 

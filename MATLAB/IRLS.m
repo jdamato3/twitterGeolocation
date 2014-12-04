@@ -1,33 +1,37 @@
-%% Logistic Regression on Fisher Iris Data Set
-% This script executes Logistic Regression on the Fisher Iris 
-% data set.
-%% Description
+%% Logistical Regression
 % This script implements a logistic regression for two class classification
-% of the iris data set using the Iteratively Reweighted Least Squares
-% (IRLS) algorithm. 
+% of the twitter data set using the Iteratively Reweighted Least Squares
+% (IRLS) algorithm.
 %
 % Statistics such as the residual error, confusion matrix, and ROC plot
 % are generated.
 %% Dependencies
 % This script uses and depends on the following:
 % - Statistics Toolbox
-%% Developers
-% James D'Amato & Britney Gill
-%% Code
+%% Initialization Steps
+% Start timer
+tic
 format long;
 
-% Create the training/test sets and labels by calling the createIrisSets. 
-% The first input argument is the p-value and the second is the case to 
+% Class to analyze
+setNum = 4;
+
+% Import dataset
+data = importTweets('matlabInput.txt', ' ');
+
+% Create the training/test sets and labels by calling createDataSet
+% The first input argument is the p-value and the second is the case to
 % classify.
 [Xtrain, Ytrain, trainLabels, Xtest, Ytest, testLabels] ...
-    = createDataSet(data, 0.7, 0);
+    = createDataSet(data, 0.7, setNum);
 
 [numRows, numCols] = size(Xtrain);
 numRowst = size(testLabels,1);
 
-% Initialize w
+% Initialize weight vector
 w = zeros(numCols, 1);
 
+% Place small values along diagonal for SVD
 Xtrain = Xtrain + eye(numRows,numCols)*1e-9;
 
 % Compute the mean from the training labels
@@ -44,6 +48,7 @@ rel = 0.5;
 nSum = 0.5;
 k = 0;
 
+%% Train the Logistical Regression Classifier
 % Test for convergence and iteration limit
 while ((rel > 0.1) && (k < 2000)),
     % Run IRLS algorithm
@@ -66,22 +71,32 @@ end
 
 out = zeros(1,numRowst);
 
+%% Predict using the Logistical Regression Classifier
 % Compute the output for each test data using w
 for i = 1:numRowst,
     out(i) = Xtest(i,:) * w;
 end
 
+%% Analyze Results
 % Transform output in 0 1 labels
 out1 = out;
 out1(out < 0) = 0;
 out1(out > 0) = 1;
 
+%end timer
+toc
+
+tempO = zeros(numRowst,1);
+tempO(Ytest == setNum) = 1;
+targetOutputs(setNum+1,:) = tempO;
+Outputs(setNum+1,:) = out1(1,:);
+
 % Compute accuracy
-accuracy = 1.0 - sum(abs(testLabels - out1'))/numRowst
+accuracy = mean(sum(targetOutputs == Outputs,2) / numRowst)
 
-% Plot confusion matrix
-% plotconfusion(testLabels', out1);
+% Plot Confusion Matrix
+plotconfusion(targetOutputs,Outputs);
 
-% Plot ROC curves
- figure();
- plotroc(testLabels', out1);
+% Plot ROC Curve
+figure();
+plotroc(targetOutputs,Outputs);
